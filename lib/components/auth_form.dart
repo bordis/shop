@@ -12,7 +12,8 @@ class AuthForm extends StatefulWidget {
   State<AuthForm> createState() => _AuthFormState();
 }
 
-class _AuthFormState extends State<AuthForm> {
+class _AuthFormState extends State<AuthForm>
+    with SingleTickerProviderStateMixin {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -22,20 +23,58 @@ class _AuthFormState extends State<AuthForm> {
     'password': '',
   };
 
+  AnimationController? _controller;
+  Animation<double>? _opacitytAnimation;
+  Animation<Offset>? _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _opacitytAnimation = Tween(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller!,
+      curve: Curves.linear,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, -1.5),
+      end: Offset(0, 0),
+    ).animate(CurvedAnimation(
+      parent: _controller!,
+      curve: Curves.linear,
+    ));
+    //_heightAnimation?.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller!.dispose();
+  }
+
   bool _isLogin() => _authMode == AuthMode.Login;
-  bool _isSignup() => _authMode == AuthMode.Signup;
+  //bool _isSignup() => _authMode == AuthMode.Signup;
 
   void _swithAuthMode() {
     setState(() {
-      if (_isLogin())
+      if (_isLogin()) {
+        _controller!.forward();
         _authMode = AuthMode.Signup;
-      else
+      } else {
         _authMode = AuthMode.Login;
+        _controller!.reverse();
+      }
     });
   }
 
   Future<void> _submit() async {
-    final isValid = _formKey.currentState!.validate() ?? false;
+    final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
       return;
@@ -87,13 +126,15 @@ class _AuthFormState extends State<AuthForm> {
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
     return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Container(
-        height: _isLogin() ? 320 : 400,
-        width: deviceSize.width * 0.75,
-        child: Padding(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.linear,
           padding: const EdgeInsets.all(16),
+          height: _isLogin() ? 320 : 400,
+          //height: _heightAnimation?.value.height ?? (_isLogin() ? 320 : 400),
+          width: deviceSize.width * 0.75,
           child: Form(
             key: _formKey,
             child: Column(
@@ -123,20 +164,33 @@ class _AuthFormState extends State<AuthForm> {
                     return null;
                   },
                 ),
-                if (_isSignup())
-                  TextFormField(
-                    decoration:
-                        const InputDecoration(labelText: 'Confirmar Senha'),
-                    obscureText: true,
-                    validator: _isLogin()
-                        ? null
-                        : (password) {
-                            if (password != _passwordController.text) {
-                              return 'Senhas são diferentes!';
-                            }
-                            return null;
-                          },
+                AnimatedContainer(
+                  constraints: BoxConstraints(
+                    minHeight: _isLogin() ? 0 : 60,
+                    maxHeight: _isLogin() ? 0 : 120,
                   ),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.linear,
+                  child: FadeTransition(
+                    opacity: _opacitytAnimation!,
+                    child: SlideTransition(
+                      position: _slideAnimation!,
+                      child: TextFormField(
+                        decoration:
+                            const InputDecoration(labelText: 'Confirmar Senha'),
+                        obscureText: true,
+                        validator: _isLogin()
+                            ? null
+                            : (password) {
+                                if (password != _passwordController.text) {
+                                  return 'Senhas são diferentes!';
+                                }
+                                return null;
+                              },
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 if (_isLoading)
                   const CircularProgressIndicator()
@@ -161,8 +215,6 @@ class _AuthFormState extends State<AuthForm> {
               ],
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 }

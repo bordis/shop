@@ -5,14 +5,13 @@ import 'package:shop/models/cart.dart';
 import 'package:shop/models/orderList.dart';
 import 'package:shop/models/product_list.dart';
 import 'package:shop/pages/auth_or_home_page.dart';
-import 'package:shop/pages/auth_page.dart';
 import 'package:shop/pages/cart_page.dart';
 import 'package:shop/pages/orders_page.dart';
 import 'package:shop/pages/product_detail_page.dart';
 import 'package:shop/pages/product_form_page.dart';
-import 'package:shop/pages/products_overview_page.dart';
 import 'package:shop/pages/products_page.dart';
 import 'package:shop/utils/app_routes.dart';
+import 'package:shop/utils/custom_route.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +56,9 @@ class MyApp extends StatelessWidget {
           ).copyWith(
             secondary: Colors.greenAccent,
           ),
+          pageTransitionsTheme: PageTransitionsTheme(builders: {
+            TargetPlatform.android: CustomPageTransitionBuilder(),
+          }),
           useMaterial3: true,
           appBarTheme: const AppBarTheme(
               backgroundColor: Colors.green,

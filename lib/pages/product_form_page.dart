@@ -55,7 +55,7 @@ class _ProductFormState extends State<ProductFormPage> {
   }
 
   Future<void> _submitForm() async {
-    final isValid = _formKey.currentState!.validate() ?? false;
+    final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
       return Future.value();

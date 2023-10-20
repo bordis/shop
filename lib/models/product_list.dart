@@ -13,8 +13,6 @@ class ProductList with ChangeNotifier {
   final String _userId;
   List<Product> _itens = [];
 
-  bool _showFavoriteOnly = false;
-
   final _baseUrl = Constants.PRODUCT_BASE_URL;
   final _baseUrlFavorites = Constants.USER_FAVORITES_URL;
 
@@ -43,7 +41,7 @@ class ProductList with ChangeNotifier {
   }
 
   Future<void> updateProduct(Product product) async {
-    if (product != null && product.id != null && product.id.trim().isNotEmpty) {
+    if (product.id.trim().isNotEmpty) {
       final index = _itens.indexWhere((prod) => prod.id == product.id);
       if (index >= 0) {
         await http.patch(
